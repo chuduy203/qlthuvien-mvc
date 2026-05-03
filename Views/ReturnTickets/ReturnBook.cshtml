@@ -52,7 +52,7 @@
                 <tbody>
                 @for (var i = 0; i < Model.Items.Count; i++)
                 {
-                    <tr class="js-return-row">
+                    <tr class="js-return-row" data-borrowed="@Model.Items[i].BorrowedQuantity">
                         <td>
                             <input asp-for="Items[@i].BookId" type="hidden" />
                             <input asp-for="Items[@i].RentalFee" type="hidden" />
@@ -62,15 +62,15 @@
                         <td class="text-center">@Model.Items[i].BorrowedQuantity</td>
                         <td class="text-end">@Model.Items[i].BookPrice.ToString("N0") đ</td>
                         <td>
-                            <input asp-for="Items[@i].NormalQuantity" class="form-control text-center js-normal" min="0" />
+                            <input asp-for="Items[@i].NormalQuantity" class="form-control text-center js-normal" min="0" max="@Model.Items[i].BorrowedQuantity" />
                             <span asp-validation-for="Items[@i].NormalQuantity" class="text-danger"></span>
                         </td>
                         <td>
-                            <input asp-for="Items[@i].DamagedQuantity" class="form-control text-center js-damaged" min="0" />
+                            <input asp-for="Items[@i].DamagedQuantity" class="form-control text-center js-damaged" min="0" max="@Model.Items[i].BorrowedQuantity" />
                             <span asp-validation-for="Items[@i].DamagedQuantity" class="text-danger"></span>
                         </td>
                         <td>
-                            <input asp-for="Items[@i].LostQuantity" class="form-control text-center js-lost" min="0" />
+                            <input asp-for="Items[@i].LostQuantity" class="form-control text-center js-lost" min="0" max="@Model.Items[i].BorrowedQuantity" />
                             <span asp-validation-for="Items[@i].LostQuantity" class="text-danger"></span>
                         </td>
                         <td class="text-end js-line-compensation">0 đ</td>
@@ -174,6 +174,65 @@
             const damageFineEl = document.getElementById('damageFine');
             const lostFineEl = document.getElementById('lostFine');
             const totalFineEl = document.getElementById('totalFine');
+            const normalOverBorrowedText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish
+                ? "Normal return quantity cannot exceed borrowed quantity."
+                : "Số lượng trả bình thường không được vượt quá số đã mượn."));
+            const damagedOverBorrowedText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish
+                ? "Damaged quantity cannot exceed borrowed quantity."
+                : "Số lượng rách/hỏng không được vượt quá số đã mượn."));
+            const lostOverBorrowedText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish
+                ? "Lost quantity cannot exceed borrowed quantity."
+                : "Số lượng mất không được vượt quá số đã mượn."));
+            const damagedAndLostOverBorrowedText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish
+                ? "Damaged + Lost cannot exceed borrowed quantity."
+                : "Tổng rách/hỏng + mất không được vượt quá số đã mượn."));
+            const processedOverBorrowedText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish
+                ? "Normal + Damaged + Lost cannot exceed borrowed quantity."
+                : "Tổng trả bình thường + rách/hỏng + mất không được vượt quá số đã mượn."));
+
+            function validateRow(row) {
+                const borrowed = toInt(row.dataset.borrowed);
+                const normalInput = row.querySelector('.js-normal');
+                const damagedInput = row.querySelector('.js-damaged');
+                const lostInput = row.querySelector('.js-lost');
+
+                if (!normalInput || !damagedInput || !lostInput) {
+                    return;
+                }
+
+                normalInput.setCustomValidity('');
+                damagedInput.setCustomValidity('');
+                lostInput.setCustomValidity('');
+
+                const normalQty = toInt(normalInput.value);
+                const damagedQty = toInt(damagedInput.value);
+                const lostQty = toInt(lostInput.value);
+
+                if (normalQty > borrowed) {
+                    normalInput.setCustomValidity(`${normalOverBorrowedText} (<= ${borrowed})`);
+                }
+
+                if (damagedQty > borrowed) {
+                    damagedInput.setCustomValidity(`${damagedOverBorrowedText} (<= ${borrowed})`);
+                }
+
+                if (lostQty > borrowed) {
+                    lostInput.setCustomValidity(`${lostOverBorrowedText} (<= ${borrowed})`);
+                }
+
+                if (damagedQty + lostQty > borrowed) {
+                    const message = `${damagedAndLostOverBorrowedText} (<= ${borrowed})`;
+                    damagedInput.setCustomValidity(message);
+                    lostInput.setCustomValidity(message);
+                }
+
+                if (normalQty + damagedQty + lostQty > borrowed) {
+                    const message = `${processedOverBorrowedText} (<= ${borrowed})`;
+                    normalInput.setCustomValidity(message);
+                    damagedInput.setCustomValidity(message);
+                    lostInput.setCustomValidity(message);
+                }
+            }
 
             function calculate() {
                 const returnDate = new Date(`${returnDateInput.value}T00:00:00`);
@@ -186,6 +245,7 @@
                 let lostFine = 0;
 
                 table.querySelectorAll('.js-return-row').forEach(row => {
+                    validateRow(row);
                     const damagedQty = toInt(row.querySelector('.js-damaged')?.value);
                     const lostQty = toInt(row.querySelector('.js-lost')?.value);
                     const bookPrice = toDecimal(row.querySelector('.js-book-price')?.value);

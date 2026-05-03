@@ -129,12 +129,15 @@ public class ReturnTicketsController : Controller
                     IsDamaged = item.DamagedQuantity > 0 || item.LostQuantity > 0
                 });
 
-                book.AvailableQuantity += item.NormalQuantity;
-
-                var damagedAndLost = item.DamagedQuantity + item.LostQuantity;
-                if (damagedAndLost > 0)
+                var returnedToShelf = item.NormalQuantity + item.DamagedQuantity;
+                if (returnedToShelf > 0)
                 {
-                    book.Quantity = Math.Max(0, book.Quantity - damagedAndLost);
+                    book.AvailableQuantity += returnedToShelf;
+                }
+
+                if (item.LostQuantity > 0)
+                {
+                    book.Quantity = Math.Max(0, book.Quantity - item.LostQuantity);
                 }
 
                 var bookValue = book.BookPrice > 0 ? book.BookPrice : Math.Max(0m, detail.UnitRentalFee);
@@ -324,6 +327,50 @@ public class ReturnTicketsController : Controller
             {
                 ModelState.AddModelError(string.Empty, this.L("Dữ liệu sách trả không hợp lệ.", "Invalid return book data."));
                 continue;
+            }
+
+            if (item.NormalQuantity > detail.Quantity)
+            {
+                ModelState.AddModelError(
+                    $"Items[{i}].NormalQuantity",
+                    this.L(
+                        $"Sach '{detail.Book?.BookName}' co so luong tra binh thuong khong duoc vuot qua {detail.Quantity}.",
+                        $"Book '{detail.Book?.BookName}' normal return quantity cannot exceed {detail.Quantity}."
+                    )
+                );
+            }
+
+            if (item.DamagedQuantity > detail.Quantity)
+            {
+                ModelState.AddModelError(
+                    $"Items[{i}].DamagedQuantity",
+                    this.L(
+                        $"Sach '{detail.Book?.BookName}' co so luong rach/hong khong duoc vuot qua {detail.Quantity}.",
+                        $"Book '{detail.Book?.BookName}' damaged quantity cannot exceed {detail.Quantity}."
+                    )
+                );
+            }
+
+            if (item.LostQuantity > detail.Quantity)
+            {
+                ModelState.AddModelError(
+                    $"Items[{i}].LostQuantity",
+                    this.L(
+                        $"Sach '{detail.Book?.BookName}' co so luong mat khong duoc vuot qua {detail.Quantity}.",
+                        $"Book '{detail.Book?.BookName}' lost quantity cannot exceed {detail.Quantity}."
+                    )
+                );
+            }
+
+            if (item.DamagedQuantity + item.LostQuantity > detail.Quantity)
+            {
+                ModelState.AddModelError(
+                    $"Items[{i}].LostQuantity",
+                    this.L(
+                        $"Sach '{detail.Book?.BookName}': Tong Rach/hong + Mat khong duoc vuot qua {detail.Quantity}.",
+                        $"Book '{detail.Book?.BookName}': Damaged + Lost quantity cannot exceed {detail.Quantity}."
+                    )
+                );
             }
 
             var processed = item.NormalQuantity + item.DamagedQuantity + item.LostQuantity;

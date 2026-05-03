@@ -39,6 +39,7 @@
                     <th>@(isEnglish ? "Quantity" : "Số lượng")</th>
                     <th>@(isEnglish ? "Unit rental fee" : "Đơn giá thuê")</th>
                     <th>@(isEnglish ? "Amount" : "Thành tiền")</th>
+                    <th>@(isEnglish ? "Condition at checkout (manual)" : "Tình trạng khi mượn (ghi tay)")</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -54,17 +55,24 @@
                         <td>@item.Quantity</td>
                         <td>@item.UnitRentalFee.ToString("N0")</td>
                         <td>@item.LineRentalFee.ToString("N0")</td>
+                        <td class="condition-write-cell"></td>
                     </tr>
                     index++;
                 }
                 </tbody>
                 <tfoot>
                 <tr>
-                    <th colspan="5" class="text-end">@(isEnglish ? "Total rental fee" : "Tổng phí thuê")</th>
+                    <th colspan="6" class="text-end">@(isEnglish ? "Total rental fee" : "Tổng phí thuê")</th>
                     <th>@Model.TotalRentalFee.ToString("N0")</th>
                 </tr>
                 </tfoot>
             </table>
+        </div>
+
+        <div class="mt-3">
+            <strong>@(isEnglish ? "General notes (manual):" : "Ghi chú chung (ghi tay):")</strong>
+            <div class="manual-note-line"></div>
+            <div class="manual-note-line"></div>
         </div>
 
         <div class="row mt-4">
@@ -81,6 +89,16 @@
 </div>
 
 <style>
+    .condition-write-cell {
+        min-width: 220px;
+        height: 44px;
+    }
+
+    .manual-note-line {
+        border-bottom: 1px dashed #7f8f86;
+        height: 28px;
+    }
+
     @@media print {
         nav, footer, .btn, .alert, .app-footer {
             display: none !important;

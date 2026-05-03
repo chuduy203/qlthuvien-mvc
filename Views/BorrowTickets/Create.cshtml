@@ -161,14 +161,17 @@
         const readerSelect = document.getElementById('ReaderId');
         const choicesInstances = new WeakMap();
         const dropdownHandlers = new WeakMap();
-        const selectBookText = '@selectBookText';
+        const selectBookText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(selectBookText));
+        const searchPlaceholderValue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish ? "Type to search..." : "Gõ để tìm..."));
+        const noResultsText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish ? "No results found" : "Không tìm thấy kết quả"));
+        const noChoicesText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(isEnglish ? "No data" : "Không có dữ liệu"));
         const choicesConfig = {
             allowHTML: false,
             searchEnabled: true,
             shouldSort: false,
-            searchPlaceholderValue: '@(isEnglish ? "Type to search..." : "Gõ để tìm...")',
-            noResultsText: '@(isEnglish ? "No results found" : "Không tìm thấy kết quả")',
-            noChoicesText: '@(isEnglish ? "No data" : "Không có dữ liệu")',
+            searchPlaceholderValue,
+            noResultsText,
+            noChoicesText,
             itemSelectText: ''
         };
 
