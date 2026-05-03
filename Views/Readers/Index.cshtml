@@ -1,0 +1,80 @@
+﻿@using System.Globalization
+@model IEnumerable<LibraryManagement.Models.Reader>
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Reader management" : "Quản lý độc giả";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a asp-action="Create" class="btn btn-primary">@(isEnglish ? "Add reader" : "Thêm độc giả")</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="@(isEnglish ? "Search code, name, phone, ID..." : "Tìm mã, tên, SĐT, CCCD...")" />
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-success w-100" type="submit">@(isEnglish ? "Search" : "Tìm kiếm")</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>@(isEnglish ? "Code" : "Mã")</th>
+            <th>@(isEnglish ? "Full name" : "Họ tên")</th>
+            <th>ID</th>
+            <th>@(isEnglish ? "Phone" : "SĐT")</th>
+            <th>@(isEnglish ? "Membership" : "Loại thẻ")</th>
+            <th>@(isEnglish ? "Status" : "Trạng thái")</th>
+            <th>@(isEnglish ? "Actions" : "Thao tác")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var x in Model)
+        {
+            <tr>
+                <td>@x.ReaderCode</td>
+                <td>
+                    <div>@x.FullName</div>
+                    <small class="text-secondary">@x.Email</small>
+                </td>
+                <td>@x.IdentityNumber</td>
+                <td>@x.Phone</td>
+                <td>@x.MembershipType</td>
+                <td>
+                    @if (x.IsActive)
+                    {
+                        <span class="badge bg-success">@(isEnglish ? "Active" : "Hoạt động")</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@(isEnglish ? "Locked" : "Khóa")</span>
+                    }
+                </td>
+                <td class="d-flex gap-1">
+                    <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-warning">@(isEnglish ? "Edit" : "Sửa")</a>
+                    <a asp-action="History" asp-route-id="@x.Id" class="btn btn-sm btn-info">@(isEnglish ? "History" : "Lịch sử")</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@if (ViewBag.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination mt-3">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="?page=@i&keyword=@ViewBag.Keyword">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

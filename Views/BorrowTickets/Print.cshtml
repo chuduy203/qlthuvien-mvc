@@ -1,0 +1,94 @@
+﻿@using System.Globalization
+@model LibraryManagement.Models.BorrowTicket
+@{
+    Layout = "_Layout";
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">@(isEnglish ? "Borrow ticket" : "Phiếu mượn sách")</h2>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="button" onclick="window.print()">@(isEnglish ? "Print" : "In phiếu")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Back" : "Quay lại")</a>
+    </div>
+</div>
+
+<div class="card print-area">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p><strong>@(isEnglish ? "Ticket code" : "Mã phiếu"):</strong> @Model.BorrowCode</p>
+                <p><strong>@(isEnglish ? "Borrow date" : "Ngày mượn"):</strong> @Model.BorrowDate.ToString("dd/MM/yyyy")</p>
+                <p><strong>@(isEnglish ? "Due date" : "Ngày trả dự kiến"):</strong> @Model.DueDate.ToString("dd/MM/yyyy")</p>
+                <p><strong>@(isEnglish ? "Total rental fee" : "Tổng phí thuê"):</strong> @Model.TotalRentalFee.ToString("N0") VND</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>@(isEnglish ? "Reader" : "Độc giả"):</strong> @Model.Reader?.FullName (@Model.Reader?.ReaderCode)</p>
+                <p><strong>@(isEnglish ? "Phone" : "Số điện thoại"):</strong> @Model.Reader?.Phone</p>
+                <p><strong>@(isEnglish ? "Created by" : "Nhân viên lập"):</strong> @Model.User?.FullName</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>@(isEnglish ? "Book code" : "Mã sách")</th>
+                    <th>@(isEnglish ? "Book name" : "Tên sách")</th>
+                    <th>@(isEnglish ? "Quantity" : "Số lượng")</th>
+                    <th>@(isEnglish ? "Unit rental fee" : "Đơn giá thuê")</th>
+                    <th>@(isEnglish ? "Amount" : "Thành tiền")</th>
+                </tr>
+                </thead>
+                <tbody>
+                @{
+                    var index = 1;
+                }
+                @foreach (var item in Model.BorrowTicketDetails)
+                {
+                    <tr>
+                        <td>@index</td>
+                        <td>@item.Book?.BookCode</td>
+                        <td>@item.Book?.BookName</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.UnitRentalFee.ToString("N0")</td>
+                        <td>@item.LineRentalFee.ToString("N0")</td>
+                    </tr>
+                    index++;
+                }
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th colspan="5" class="text-end">@(isEnglish ? "Total rental fee" : "Tổng phí thuê")</th>
+                    <th>@Model.TotalRentalFee.ToString("N0")</th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col text-center">
+                <p><strong>@(isEnglish ? "Staff" : "Người lập phiếu")</strong></p>
+                <p class="mt-5">@Model.User?.FullName</p>
+            </div>
+            <div class="col text-center">
+                <p><strong>@(isEnglish ? "Reader" : "Độc giả")</strong></p>
+                <p class="mt-5">@Model.Reader?.FullName</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        nav, footer, .btn, .alert, .app-footer {
+            display: none !important;
+        }
+
+        .print-area {
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+    }
+</style>

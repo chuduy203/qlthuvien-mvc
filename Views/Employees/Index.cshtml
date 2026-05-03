@@ -1,0 +1,87 @@
+﻿@using System.Globalization
+@model IEnumerable<LibraryManagement.Models.User>
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Employee management" : "Quản lý nhân viên";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a asp-action="Create" class="btn btn-primary">@(isEnglish ? "Add employee" : "Thêm nhân viên")</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="@(isEnglish ? "Search by name or email..." : "Tìm theo họ tên hoặc email...")" />
+    </div>
+    <div class="col-md-3">
+        <select name="roleId" asp-items="ViewBag.Roles" class="form-select">
+            <option value="">@(isEnglish ? "-- All roles --" : "-- Tất cả vai trò --")</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="isActive" class="form-select">
+            <option value="">@(isEnglish ? "-- All status --" : "-- Tất cả trạng thái --")</option>
+            @if (ViewBag.IsActive?.ToString() == "True")
+            {
+                <option value="true" selected>@(isEnglish ? "Active" : "Hoạt động")</option>
+            }
+            else
+            {
+                <option value="true">@(isEnglish ? "Active" : "Hoạt động")</option>
+            }
+            @if (ViewBag.IsActive?.ToString() == "False")
+            {
+                <option value="false" selected>@(isEnglish ? "Locked" : "Khóa")</option>
+            }
+            else
+            {
+                <option value="false">@(isEnglish ? "Locked" : "Khóa")</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-success w-100">@(isEnglish ? "Filter" : "Lọc")</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>@(isEnglish ? "Full name" : "Họ tên")</th>
+            <th>Email</th>
+            <th>@(isEnglish ? "Role" : "Vai trò")</th>
+            <th>@(isEnglish ? "Status" : "Trạng thái")</th>
+            <th>@(isEnglish ? "Created date" : "Ngày tạo")</th>
+            <th>@(isEnglish ? "Actions" : "Thao tác")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FullName</td>
+                <td>@item.Email</td>
+                <td>@item.Role?.RoleName</td>
+                <td>
+                    @if (item.IsActive)
+                    {
+                        <span class="badge bg-success">@(isEnglish ? "Active" : "Hoạt động")</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@(isEnglish ? "Locked" : "Khóa")</span>
+                    }
+                </td>
+                <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                <td class="d-flex gap-1">
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">@(isEnglish ? "Edit" : "Sửa")</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">@(isEnglish ? "Delete" : "Xóa")</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

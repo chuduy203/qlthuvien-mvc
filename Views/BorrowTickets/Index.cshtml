@@ -1,0 +1,93 @@
+﻿@using System.Globalization
+@model IEnumerable<LibraryManagement.Models.BorrowTicket>
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Borrow tickets" : "Phiếu mượn";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a asp-action="Create" class="btn btn-primary">@(isEnglish ? "Create borrow ticket" : "Lập phiếu mượn")</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">@(isEnglish ? "-- All status --" : "-- Tất cả trạng thái --")</option>
+            @if (ViewBag.Status?.ToString() == "Borrowing")
+            {
+                <option value="Borrowing" selected>@(isEnglish ? "Borrowing" : "Đang mượn")</option>
+            }
+            else
+            {
+                <option value="Borrowing">@(isEnglish ? "Borrowing" : "Đang mượn")</option>
+            }
+            @if (ViewBag.Status?.ToString() == "Returned")
+            {
+                <option value="Returned" selected>@(isEnglish ? "Returned" : "Đã trả")</option>
+            }
+            else
+            {
+                <option value="Returned">@(isEnglish ? "Returned" : "Đã trả")</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-success w-100" type="submit">@(isEnglish ? "Filter" : "Lọc")</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>@(isEnglish ? "Code" : "Mã phiếu")</th>
+            <th>@(isEnglish ? "Reader" : "Độc giả")</th>
+            <th>@(isEnglish ? "Staff" : "Nhân viên")</th>
+            <th>@(isEnglish ? "Borrow date" : "Ngày mượn")</th>
+            <th>@(isEnglish ? "Due date" : "Ngày trả dự kiến")</th>
+            <th>@(isEnglish ? "Books" : "Sách")</th>
+            <th>@(isEnglish ? "Total rental fee" : "Tổng phí thuê")</th>
+            <th>@(isEnglish ? "Status" : "Trạng thái")</th>
+            <th>@(isEnglish ? "Actions" : "Thao tác")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var x in Model)
+        {
+            <tr>
+                <td>@x.BorrowCode</td>
+                <td>@x.Reader?.FullName</td>
+                <td>@x.User?.FullName</td>
+                <td>@x.BorrowDate.ToString("dd/MM/yyyy")</td>
+                <td>@x.DueDate.ToString("dd/MM/yyyy")</td>
+                <td>
+                    @foreach (var d in x.BorrowTicketDetails)
+                    {
+                        <div>@d.Book?.BookName x @d.Quantity</div>
+                    }
+                </td>
+                <td>@x.TotalRentalFee.ToString("N0") đ</td>
+                <td>
+                    @if (x.Status == "Borrowing")
+                    {
+                        <span class="badge bg-warning text-dark">@(isEnglish ? "Borrowing" : "Đang mượn")</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">@(isEnglish ? "Returned" : "Đã trả")</span>
+                    }
+                </td>
+                <td class="d-flex gap-1">
+                    <a asp-action="Print" asp-route-id="@x.Id" class="btn btn-sm btn-info">@(isEnglish ? "Print" : "In phiếu")</a>
+                    @if (x.Status == "Borrowing")
+                    {
+                        <a asp-controller="ReturnTickets" asp-action="ReturnBook" asp-route-borrowTicketId="@x.Id" class="btn btn-sm btn-success">@(isEnglish ? "Return" : "Trả sách")</a>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

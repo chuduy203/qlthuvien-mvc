@@ -1,0 +1,109 @@
+﻿@using System.Globalization
+@model LibraryManagement.Models.Reader
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Add reader" : "Thêm độc giả";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-4">
+        <label asp-for="ReaderCode" class="form-label">@(isEnglish ? "Reader code" : "Mã độc giả")</label>
+        <input asp-for="ReaderCode" class="form-control" />
+        <span asp-validation-for="ReaderCode" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="IdentityNumber" class="form-label">@(isEnglish ? "National ID" : "CCCD/CMND")</label>
+        <input asp-for="IdentityNumber" class="form-control" />
+        <span asp-validation-for="IdentityNumber" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Gender" class="form-label">@(isEnglish ? "Gender" : "Giới tính")</label>
+        <select asp-for="Gender" class="form-select">
+            <option value="">@(isEnglish ? "-- Select --" : "-- Chọn --")</option>
+            <option value="Nam">@(isEnglish ? "Male" : "Nam")</option>
+            <option value="Nữ">@(isEnglish ? "Female" : "Nữ")</option>
+            <option value="Khác">@(isEnglish ? "Other" : "Khác")</option>
+        </select>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="FullName" class="form-label">@(isEnglish ? "Full name" : "Họ tên")</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="DateOfBirth" class="form-label">@(isEnglish ? "Date of birth" : "Ngày sinh")</label>
+        <input asp-for="DateOfBirth" type="date" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="MembershipType" class="form-label">@(isEnglish ? "Membership type" : "Loại thẻ")</label>
+        <input asp-for="MembershipType" class="form-control" />
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Phone" class="form-label">@(isEnglish ? "Phone" : "Số điện thoại")</label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Email" class="form-label">Email</label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Occupation" class="form-label">@(isEnglish ? "Occupation" : "Nghề nghiệp")</label>
+        <input asp-for="Occupation" class="form-control" />
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Workplace" class="form-label">@(isEnglish ? "Workplace/School" : "Nơi công tác/học tập")</label>
+        <input asp-for="Workplace" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Address" class="form-label">@(isEnglish ? "Address" : "Địa chỉ")</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="CardIssuedDate" class="form-label">@(isEnglish ? "Card issue date" : "Ngày cấp thẻ")</label>
+        <input asp-for="CardIssuedDate" type="date" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="CardExpiryDate" class="form-label">@(isEnglish ? "Card expiry date" : "Ngày hết hạn thẻ")</label>
+        <input asp-for="CardExpiryDate" type="date" class="form-control" />
+        <span asp-validation-for="CardExpiryDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="EmergencyContactName" class="form-label">@(isEnglish ? "Emergency contact" : "Người liên hệ khẩn cấp")</label>
+        <input asp-for="EmergencyContactName" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="EmergencyContactPhone" class="form-label">@(isEnglish ? "Emergency phone" : "SĐT khẩn cấp")</label>
+        <input asp-for="EmergencyContactPhone" class="form-control" />
+        <span asp-validation-for="EmergencyContactPhone" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="Notes" class="form-label">@(isEnglish ? "Notes" : "Ghi chú")</label>
+        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="col-md-3">
+        <div class="form-check mt-2">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label asp-for="IsActive" class="form-check-label">@(isEnglish ? "Active" : "Còn hoạt động")</label>
+        </div>
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary">@(isEnglish ? "Save" : "Lưu")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Back" : "Quay lại")</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,63 @@
+﻿@using System.Globalization
+@model IEnumerable<LibraryManagement.Models.Book>
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Dashboard" : "Trang chủ";
+}
+
+<section class="hero-banner mb-4">
+    <p class="hero-kicker mb-1">Dashboard</p>
+    <h1 class="hero-title">@(isEnglish ? "Manage your library effectively and clearly" : "Quản lý thư viện hiệu quả và trực quan")</h1>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5>@(isEnglish ? "Total Books" : "Tổng sách")</h5>
+                <h2>@ViewBag.TotalBooks</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5>@(isEnglish ? "Readers" : "Độc giả")</h5>
+                <h2>@ViewBag.TotalReaders</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5>@(isEnglish ? "Borrowing" : "Đang mượn")</h5>
+                <h2>@ViewBag.Borrowing</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5>@(isEnglish ? "Overdue" : "Quá hạn")</h5>
+                <h2>@ViewBag.Overdue</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>@(isEnglish ? "Recently updated books" : "Sách mới cập nhật")</h3>
+<div class="row g-3">
+    @foreach (var book in Model)
+    {
+        <div class="col-md-3">
+            <div class="card h-100">
+                <img class="card-img-top book-cover" src="@(book.ImageUrl ?? "/images/books/no-image.png")" alt="@book.BookName" />
+                <div class="card-body">
+                    <h5 class="mb-1">@book.BookName</h5>
+                    <p class="text-secondary mb-2">@book.Author?.AuthorName</p>
+                    <span class="badge bg-success">@(isEnglish ? "Available" : "Còn") @book.AvailableQuantity</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>

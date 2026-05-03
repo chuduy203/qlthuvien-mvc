@@ -1,0 +1,75 @@
+﻿@using System.Globalization
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+}
+<!DOCTYPE html>
+<html lang="@(isEnglish ? "en" : "vi")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - QL Thư Viện</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="app-body">
+<nav class="navbar navbar-expand-lg navbar-dark app-navbar shadow-sm">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+            <span class="brand-mark">TV</span>
+            <span>@(isEnglish ? "Library Management" : "QL Thư Viện")</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">@(isEnglish ? "Home" : "Trang chủ")</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Books" asp-action="Index">@(isEnglish ? "Books" : "Sách")</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Readers" asp-action="Index">@(isEnglish ? "Readers" : "Độc giả")</a></li>
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Employees" asp-action="Index">@(isEnglish ? "Employees" : "Nhân viên")</a></li>
+                    }
+                }
+                <li class="nav-item"><a class="nav-link" asp-controller="BorrowTickets" asp-action="Index">@(isEnglish ? "Borrow Tickets" : "Phiếu mượn")</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="ReturnTickets" asp-action="Index">@(isEnglish ? "Return Tickets" : "Phiếu trả")</a></li>
+            </ul>
+            <div class="d-flex align-items-center gap-3 ms-lg-3">
+                @await Html.PartialAsync("_SelectLanguagePartial")
+                <ul class="navbar-nav">
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <li class="nav-item"><span class="nav-link">@(isEnglish ? "Hello" : "Xin chào") @User.Identity.Name</span></li>
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button class="btn btn-link nav-link">@(isEnglish ? "Logout" : "Đăng xuất")</button>
+                            </form>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">@(isEnglish ? "Login" : "Đăng nhập")</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<main class="container mt-4 mb-5 app-content">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+    @RenderBody()
+</main>
+<footer class="app-footer">
+    <div class="container">@(isEnglish ? "Library Management System" : "Hệ Thống Quản Lý Thư Viện") - @DateTime.Now.Year</div>
+</footer>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

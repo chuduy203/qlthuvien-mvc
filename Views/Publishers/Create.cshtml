@@ -1,0 +1,30 @@
+﻿@using System.Globalization
+@model LibraryManagement.Models.Publisher
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    var isCreate = Model.Id == 0;
+    ViewData["Title"] = isCreate
+        ? (isEnglish ? "Add publisher" : "Thêm nhà xuất bản")
+        : (isEnglish ? "Edit publisher" : "Sửa nhà xuất bản");
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="@(isCreate ? "Create" : "Edit")" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="PublisherName" class="form-label">@(isEnglish ? "Publisher name" : "Tên nhà xuất bản")</label>
+        <input asp-for="PublisherName" class="form-control" />
+        <span asp-validation-for="PublisherName" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary">@(isEnglish ? "Save" : "Lưu")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Back" : "Quay lại")</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

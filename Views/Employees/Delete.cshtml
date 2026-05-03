@@ -1,0 +1,27 @@
+﻿@using System.Globalization
+@model LibraryManagement.Models.User
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Delete employee" : "Xóa nhân viên";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p>@(isEnglish ? "Are you sure you want to delete this employee?" : "Bạn có chắc chắn muốn xóa nhân viên sau?")</p>
+        <ul>
+            <li><strong>@(isEnglish ? "Full name" : "Họ tên"):</strong> @Model.FullName</li>
+            <li><strong>Email:</strong> @Model.Email</li>
+            <li><strong>@(isEnglish ? "Role" : "Vai trò"):</strong> @Model.Role?.RoleName</li>
+        </ul>
+        <p class="text-muted mb-3">@(isEnglish ? "If this employee already has borrow/return records, the system will lock the account instead of hard delete." : "Nếu nhân viên đã lập phiếu mượn/trả, hệ thống sẽ khóa tài khoản thay vì xóa cứng.")</p>
+
+        <form asp-action="Delete" method="post" class="d-flex gap-2">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <button class="btn btn-danger">@(isEnglish ? "Confirm delete" : "Xác nhận xóa")</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Cancel" : "Hủy")</a>
+        </form>
+    </div>
+</div>

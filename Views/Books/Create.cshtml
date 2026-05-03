@@ -1,0 +1,86 @@
+﻿@using System.Globalization
+@model LibraryManagement.Models.Book
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Add book" : "Thêm sách";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="BookCode" class="form-label">@(isEnglish ? "Book code" : "Mã sách")</label>
+            <input asp-for="BookCode" class="form-control" />
+            <span asp-validation-for="BookCode" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="BookName" class="form-label">@(isEnglish ? "Book name" : "Tên sách")</label>
+            <input asp-for="BookName" class="form-control" />
+            <span asp-validation-for="BookName" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label asp-for="CategoryId" class="form-label">@(isEnglish ? "Category" : "Thể loại")</label>
+            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                <option value="">@(isEnglish ? "-- Select --" : "-- Chọn --")</option>
+            </select>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label asp-for="AuthorId" class="form-label">@(isEnglish ? "Author" : "Tác giả")</label>
+            <select asp-for="AuthorId" asp-items="ViewBag.Authors" class="form-select">
+                <option value="">@(isEnglish ? "-- Select --" : "-- Chọn --")</option>
+            </select>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label asp-for="PublisherId" class="form-label">@(isEnglish ? "Publisher" : "Nhà xuất bản")</label>
+            <select asp-for="PublisherId" asp-items="ViewBag.Publishers" class="form-select">
+                <option value="">@(isEnglish ? "-- Select --" : "-- Chọn --")</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-2 mb-3">
+            <label asp-for="PublishYear" class="form-label">@(isEnglish ? "Publish year" : "Năm XB")</label>
+            <input asp-for="PublishYear" class="form-control" />
+        </div>
+        <div class="col-md-2 mb-3">
+            <label asp-for="Quantity" class="form-label">@(isEnglish ? "Quantity" : "Số lượng")</label>
+            <input asp-for="Quantity" class="form-control" />
+            <span asp-validation-for="Quantity" class="text-danger"></span>
+        </div>
+        <div class="col-md-2 mb-3">
+            <label asp-for="RentalFee" class="form-label">@(isEnglish ? "Rental fee / copy" : "Phí thuê / cuốn")</label>
+            <input asp-for="RentalFee" class="form-control" />
+            <span asp-validation-for="RentalFee" class="text-danger"></span>
+        </div>
+        <div class="col-md-2 mb-3">
+            <label asp-for="BookPrice" class="form-label">@(isEnglish ? "Book price / copy" : "Giá sách / cuốn")</label>
+            <input asp-for="BookPrice" class="form-control" />
+            <span asp-validation-for="BookPrice" class="text-danger"></span>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">@(isEnglish ? "Cover image" : "Ảnh bìa")</label>
+            <input type="file" name="imageFile" class="form-control" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">@(isEnglish ? "Description" : "Mô tả")</label>
+        <textarea asp-for="Description" class="form-control editor"></textarea>
+    </div>
+
+    <button class="btn btn-primary">@(isEnglish ? "Save" : "Lưu")</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Back" : "Quay lại")</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"></script>
+    <script>tinymce.init({ selector: '.editor', height: 280 });</script>
+}

@@ -1,0 +1,348 @@
+﻿@using System.Globalization
+@model LibraryManagement.ViewModels.BorrowTicketCreateViewModel
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    var selectReaderText = isEnglish ? "-- Select reader --" : "-- Chọn độc giả --";
+    var selectBookText = isEnglish ? "-- Select book --" : "-- Chọn sách --";
+}
+
+<h2>@(isEnglish ? "Create borrow ticket" : "Lập phiếu mượn")</h2>
+
+<form asp-action="Create" method="post" id="borrow-form" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-4">
+        <label asp-for="ReaderId" class="form-label">@(isEnglish ? "Reader" : "Độc giả")</label>
+        <select asp-for="ReaderId" asp-items="ViewBag.Readers" class="form-select">
+            <option value="">@selectReaderText</option>
+        </select>
+        <span asp-validation-for="ReaderId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="BorrowDate" class="form-label">@(isEnglish ? "Borrow date" : "Ngày mượn")</label>
+        <input asp-for="BorrowDate" type="date" class="form-control" />
+        <span asp-validation-for="BorrowDate" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="DueDate" class="form-label">@(isEnglish ? "Due date" : "Ngày trả dự kiến")</label>
+        <input asp-for="DueDate" type="date" class="form-control" />
+        <span asp-validation-for="DueDate" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">@(isEnglish ? "Borrowed books" : "Danh sách sách mượn")</h5>
+            <button type="button" id="add-row" class="btn btn-sm btn-success">@(isEnglish ? "+ Add book" : "+ Thêm sách")</button>
+        </div>
+
+        <div class="table-responsive borrow-table-wrap">
+            <table class="table table-bordered" id="book-items-table">
+                <thead>
+                <tr>
+                    <th style="width: 46%">@(isEnglish ? "Book" : "Sách")</th>
+                    <th style="width: 15%">@(isEnglish ? "Available" : "Còn")</th>
+                    <th style="width: 15%">@(isEnglish ? "Rental fee" : "Đơn giá thuê")</th>
+                    <th style="width: 12%">@(isEnglish ? "Quantity" : "Số lượng")</th>
+                    <th style="width: 12%">@(isEnglish ? "Amount" : "Thành tiền")</th>
+                    <th style="width: 5%"></th>
+                </tr>
+                </thead>
+                <tbody id="book-items-body">
+                @for (var i = 0; i < Model.Items.Count; i++)
+                {
+                    <tr class="book-row">
+                        <td>
+                            <select name="Items[@i].BookId" class="form-select book-select" data-selected="@Model.Items[i].BookId">
+                                <option value="">@selectBookText</option>
+                            </select>
+                        </td>
+                        <td class="book-stock text-center">0</td>
+                        <td class="book-fee text-end">0</td>
+                        <td>
+                            <input name="Items[@i].Quantity" type="number" class="form-control book-qty" value="@Model.Items[i].Quantity" min="1" />
+                        </td>
+                        <td class="book-line-fee text-end">0</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th colspan="4" class="text-end">@(isEnglish ? "Total rental fee" : "Tổng phí thuê")</th>
+                    <th id="total-rental-fee" class="text-end">0</th>
+                    <th></th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary">@(isEnglish ? "Save borrow ticket" : "Lưu phiếu mượn")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Back" : "Quay lại")</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <style>
+        #borrow-form .choices {
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        #borrow-form .choices__inner {
+            min-height: calc(1.5em + .75rem + 2px);
+            padding: .375rem 2.2rem .375rem .75rem;
+            border-radius: 10px;
+            border: 1px solid #c8d9cf;
+            background: #fff;
+            color: #1c2b24;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        #borrow-form .is-focused .choices__inner,
+        #borrow-form .is-open .choices__inner {
+            border-color: var(--app-green-600);
+            box-shadow: 0 0 0 .2rem rgba(42, 141, 98, .18);
+        }
+
+        #borrow-form .choices__list--single {
+            padding: 0;
+        }
+
+        #borrow-form .choices__item--selectable {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #borrow-form .choices[data-type*=select-one]::after {
+            right: .9rem;
+            margin-top: -3px;
+        }
+
+        #borrow-form .choices__placeholder {
+            color: #647a6e;
+            opacity: 1;
+        }
+
+        .borrow-table-wrap.choices-open {
+            overflow: visible;
+        }
+
+        #borrow-form .choices__list--dropdown {
+            z-index: 1200;
+            border-color: #c8d9cf;
+            border-radius: 10px;
+            box-shadow: 0 8px 18px rgba(16, 56, 43, .12);
+        }
+
+        #borrow-form .choices__list--dropdown .choices__input {
+            border: 1px solid #c8d9cf;
+            border-radius: 8px;
+            padding: .35rem .55rem;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        const books = @Html.Raw(ViewBag.BooksJson);
+        const booksMap = new Map(books.map(x => [x.id.toString(), x]));
+        const body = document.getElementById('book-items-body');
+        const tableWrap = document.querySelector('.borrow-table-wrap');
+        const addBtn = document.getElementById('add-row');
+        const form = document.getElementById('borrow-form');
+        const readerSelect = document.getElementById('ReaderId');
+        const choicesInstances = new WeakMap();
+        const dropdownHandlers = new WeakMap();
+        const selectBookText = '@selectBookText';
+        const choicesConfig = {
+            allowHTML: false,
+            searchEnabled: true,
+            shouldSort: false,
+            searchPlaceholderValue: '@(isEnglish ? "Type to search..." : "Gõ để tìm...")',
+            noResultsText: '@(isEnglish ? "No results found" : "Không tìm thấy kết quả")',
+            noChoicesText: '@(isEnglish ? "No data" : "Không có dữ liệu")',
+            itemSelectText: ''
+        };
+
+        function formatMoney(n) {
+            return Number(n || 0).toLocaleString('vi-VN');
+        }
+
+        function buildOptions(selectedValue) {
+            let html = `<option value="">${selectBookText}</option>`;
+            for (const b of books) {
+                const selected = selectedValue && selectedValue === b.id.toString() ? ' selected' : '';
+                html += `<option value="${b.id}"${selected}>${b.name}</option>`;
+            }
+            return html;
+        }
+
+        function setTableOverflowForDropdown(opened) {
+            if (!tableWrap) {
+                return;
+            }
+            tableWrap.classList.toggle('choices-open', opened);
+        }
+
+        function attachDropdownEvents(selectElement) {
+            if (!selectElement.classList.contains('book-select')) {
+                return;
+            }
+
+            const onShow = () => setTableOverflowForDropdown(true);
+            const onHide = () => setTableOverflowForDropdown(false);
+
+            selectElement.addEventListener('showDropdown', onShow);
+            selectElement.addEventListener('hideDropdown', onHide);
+            selectElement.addEventListener('choice', onHide);
+            dropdownHandlers.set(selectElement, { onShow, onHide });
+        }
+
+        function detachDropdownEvents(selectElement) {
+            const handlers = dropdownHandlers.get(selectElement);
+            if (!handlers) {
+                return;
+            }
+
+            selectElement.removeEventListener('showDropdown', handlers.onShow);
+            selectElement.removeEventListener('hideDropdown', handlers.onHide);
+            selectElement.removeEventListener('choice', handlers.onHide);
+            dropdownHandlers.delete(selectElement);
+            setTableOverflowForDropdown(false);
+        }
+
+        function initSearchableSelect(selectElement) {
+            if (!selectElement || typeof Choices === 'undefined') {
+                return;
+            }
+
+            const oldInstance = choicesInstances.get(selectElement);
+            if (oldInstance) {
+                detachDropdownEvents(selectElement);
+                oldInstance.destroy();
+            }
+
+            const instance = new Choices(selectElement, choicesConfig);
+            choicesInstances.set(selectElement, instance);
+            attachDropdownEvents(selectElement);
+        }
+
+        function destroySearchableSelect(selectElement) {
+            const instance = choicesInstances.get(selectElement);
+            if (!instance) {
+                return;
+            }
+
+            detachDropdownEvents(selectElement);
+            instance.destroy();
+            choicesInstances.delete(selectElement);
+        }
+
+        function updateRow(row) {
+            const select = row.querySelector('.book-select');
+            const qtyInput = row.querySelector('.book-qty');
+            const stockCell = row.querySelector('.book-stock');
+            const feeCell = row.querySelector('.book-fee');
+            const lineFeeCell = row.querySelector('.book-line-fee');
+            const selected = booksMap.get(select.value);
+
+            if (!selected) {
+                stockCell.textContent = '0';
+                feeCell.textContent = '0';
+                lineFeeCell.textContent = '0';
+                return;
+            }
+
+            stockCell.textContent = selected.availableQuantity;
+            feeCell.textContent = formatMoney(selected.rentalFee);
+            const line = Number(selected.rentalFee) * Number(qtyInput.value || 0);
+            lineFeeCell.textContent = formatMoney(line);
+        }
+
+        function updateTotalFee() {
+            let total = 0;
+            body.querySelectorAll('.book-row').forEach(row => {
+                const select = row.querySelector('.book-select');
+                const qtyInput = row.querySelector('.book-qty');
+                const selected = booksMap.get(select.value);
+                if (selected) {
+                    total += Number(selected.rentalFee) * Number(qtyInput.value || 0);
+                }
+            });
+            document.getElementById('total-rental-fee').textContent = formatMoney(total);
+        }
+
+        function reindexRows() {
+            const rows = body.querySelectorAll('.book-row');
+            rows.forEach((row, idx) => {
+                row.querySelector('.book-select').setAttribute('name', `Items[${idx}].BookId`);
+                row.querySelector('.book-qty').setAttribute('name', `Items[${idx}].Quantity`);
+            });
+        }
+
+        function attachRowEvents(row) {
+            row.querySelector('.book-select').addEventListener('change', () => {
+                updateRow(row);
+                updateTotalFee();
+            });
+            row.querySelector('.book-qty').addEventListener('input', () => {
+                updateRow(row);
+                updateTotalFee();
+            });
+            row.querySelector('.remove-row').addEventListener('click', () => {
+                if (body.querySelectorAll('.book-row').length <= 1) {
+                    return;
+                }
+                destroySearchableSelect(row.querySelector('.book-select'));
+                row.remove();
+                reindexRows();
+                updateTotalFee();
+            });
+        }
+
+        function addRow() {
+            const index = body.querySelectorAll('.book-row').length;
+            const tr = document.createElement('tr');
+            tr.className = 'book-row';
+            tr.innerHTML = `
+                <td><select name="Items[${index}].BookId" class="form-select book-select">${buildOptions('')}</select></td>
+                <td class="book-stock text-center">0</td>
+                <td class="book-fee text-end">0</td>
+                <td><input name="Items[${index}].Quantity" type="number" class="form-control book-qty" value="1" min="1" /></td>
+                <td class="book-line-fee text-end">0</td>
+                <td><button type="button" class="btn btn-sm btn-danger remove-row">X</button></td>
+            `;
+            body.appendChild(tr);
+            attachRowEvents(tr);
+            initSearchableSelect(tr.querySelector('.book-select'));
+        }
+
+        function initializeRows() {
+            const rows = body.querySelectorAll('.book-row');
+            rows.forEach(row => {
+                const select = row.querySelector('.book-select');
+                const currentValue = select.dataset.selected && select.dataset.selected !== '0'
+                    ? select.dataset.selected
+                    : '';
+                select.innerHTML = buildOptions(currentValue);
+                attachRowEvents(row);
+                initSearchableSelect(select);
+                updateRow(row);
+            });
+            updateTotalFee();
+        }
+
+        addBtn.addEventListener('click', addRow);
+        form.addEventListener('submit', reindexRows);
+        initSearchableSelect(readerSelect);
+        initializeRows();
+    </script>
+}

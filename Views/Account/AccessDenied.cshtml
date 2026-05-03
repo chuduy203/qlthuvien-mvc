@@ -1,0 +1,8 @@
+﻿@using System.Globalization
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Access denied" : "Không có quyền truy cập";
+}
+
+<h2>@ViewData["Title"]</h2>
+<p>@(isEnglish ? "You do not have permission to use this feature." : "Bạn không có quyền sử dụng chức năng này.")</p>

@@ -1,0 +1,18 @@
+﻿@using System.Globalization
+@model LibraryManagement.Models.Book
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Delete book" : "Xóa sách";
+}
+
+<h2>@ViewData["Title"]</h2>
+<p>
+    @(isEnglish ? "Are you sure you want to delete" : "Bạn có chắc muốn xóa")
+    <b>@Model.BookName</b>?
+</p>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button class="btn btn-danger">@(isEnglish ? "Delete" : "Xóa")</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Cancel" : "Hủy")</a>
+</form>

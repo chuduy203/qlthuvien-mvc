@@ -1,0 +1,84 @@
+﻿@using System.Globalization
+@model IEnumerable<LibraryManagement.Models.Book>
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    ViewData["Title"] = isEnglish ? "Book management" : "Quản lý sách";
+}
+
+<h2>@ViewData["Title"]</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">@(isEnglish ? "Add book" : "Thêm sách")</a>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="@(isEnglish ? "Search books..." : "Tìm kiếm sách...")" />
+    </div>
+    <div class="col-md-3">
+        <select name="categoryId" class="form-select" asp-items="ViewBag.Categories">
+            <option value="">@(isEnglish ? "-- All categories --" : "-- Tất cả thể loại --")</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-success">@(isEnglish ? "Search" : "Tìm kiếm")</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>@(isEnglish ? "Cover" : "Ảnh")</th>
+            <th>@(isEnglish ? "Code" : "Mã")</th>
+            <th>@(isEnglish ? "Book name" : "Tên sách")</th>
+            <th>@(isEnglish ? "Category" : "Thể loại")</th>
+            <th>@(isEnglish ? "Author" : "Tác giả")</th>
+            <th>@(isEnglish ? "Qty" : "SL")</th>
+            <th>@(isEnglish ? "Available" : "Còn")</th>
+            <th>@(isEnglish ? "Rental fee" : "Phí thuê")</th>
+            <th>@(isEnglish ? "Book price" : "Giá sách")</th>
+            <th>@(isEnglish ? "Actions" : "Thao tác")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@if (!string.IsNullOrEmpty(item.ImageUrl)) { <img src="@item.ImageUrl" width="60" alt="@item.BookName" /> }</td>
+                <td>@item.BookCode</td>
+                <td>@item.BookName</td>
+                <td>@item.Category?.CategoryName</td>
+                <td>@item.Author?.AuthorName</td>
+                <td>@item.Quantity</td>
+                <td>@item.AvailableQuantity</td>
+                <td>@item.RentalFee.ToString("N0") đ</td>
+                <td>@item.BookPrice.ToString("N0") đ</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">@(isEnglish ? "Edit" : "Sửa")</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">@(isEnglish ? "Delete" : "Xóa")</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link" href="?page=@i&keyword=@ViewBag.Keyword&categoryId=@ViewBag.CategoryId">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+
+<hr />
+<h4>@(isEnglish ? "AJAX search" : "Tìm kiếm AJAX")</h4>
+<input id="ajaxKeyword" class="form-control" placeholder="@(isEnglish ? "Enter code or book name" : "Nhập mã hoặc tên sách")" />
+<table class="table mt-2">
+    <tbody id="ajaxBookBody"></tbody>
+</table>
+
+@section Scripts {
+    <script src="~/js/book-search.js"></script>
+}

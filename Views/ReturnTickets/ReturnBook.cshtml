@@ -1,0 +1,223 @@
+﻿@using System.Globalization
+@model LibraryManagement.ViewModels.ReturnBookProcessViewModel
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    decimal finePerDay = ViewBag.FinePerDay is decimal fp && fp > 0 ? fp : 5000m;
+    decimal damageRate = ViewBag.DamageCompensationRate is decimal dr && dr > 0 ? dr : 0.3m;
+    decimal lostRate = ViewBag.LostCompensationRate is decimal lr && lr > 0 ? lr : 1m;
+}
+
+<h2>@(isEnglish ? "Return books" : "Trả sách")</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-3"><strong>@(isEnglish ? "Borrow code" : "Mã phiếu mượn"):</strong> @Model.BorrowCode</div>
+            <div class="col-md-3"><strong>@(isEnglish ? "Reader" : "Độc giả"):</strong> @Model.ReaderName</div>
+            <div class="col-md-3"><strong>@(isEnglish ? "Borrow date" : "Ngày mượn"):</strong> @Model.BorrowDate.ToString("dd/MM/yyyy")</div>
+            <div class="col-md-3"><strong>@(isEnglish ? "Due date" : "Hạn trả"):</strong> @Model.DueDate.ToString("dd/MM/yyyy")</div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="ReturnBook" method="post" class="row g-3">
+    @Html.AntiForgeryToken()
+    <input asp-for="BorrowTicketId" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-3">
+        <label asp-for="ReturnDate" class="form-label">@(isEnglish ? "Return date" : "Ngày trả")</label>
+        <input asp-for="ReturnDate" type="date" class="form-control" />
+        <span asp-validation-for="ReturnDate" class="text-danger"></span>
+    </div>
+
+    <div class="col-12" id="fineConfig"
+         data-fine-per-day="@finePerDay.ToString(CultureInfo.InvariantCulture)"
+         data-damage-rate="@damageRate.ToString(CultureInfo.InvariantCulture)"
+         data-lost-rate="@lostRate.ToString(CultureInfo.InvariantCulture)"
+         data-due-date="@Model.DueDate.ToString("yyyy-MM-dd")">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="returnItemsTable">
+                <thead>
+                <tr>
+                    <th>@(isEnglish ? "Book" : "Sách")</th>
+                    <th class="text-center">@(isEnglish ? "Borrowed" : "Đã mượn")</th>
+                    <th class="text-end">@(isEnglish ? "Book price" : "Giá sách")</th>
+                    <th class="text-center">@(isEnglish ? "Normal return" : "Trả bình thường")</th>
+                    <th class="text-center">@(isEnglish ? "Damaged" : "Rách / hỏng")</th>
+                    <th class="text-center">@(isEnglish ? "Lost" : "Mất")</th>
+                    <th class="text-end">@(isEnglish ? "Compensation" : "Bồi thường")</th>
+                </tr>
+                </thead>
+                <tbody>
+                @for (var i = 0; i < Model.Items.Count; i++)
+                {
+                    <tr class="js-return-row">
+                        <td>
+                            <input asp-for="Items[@i].BookId" type="hidden" />
+                            <input asp-for="Items[@i].RentalFee" type="hidden" />
+                            <input asp-for="Items[@i].BookPrice" type="hidden" class="js-book-price" />
+                            @Model.Items[i].BookCode - @Model.Items[i].BookName
+                        </td>
+                        <td class="text-center">@Model.Items[i].BorrowedQuantity</td>
+                        <td class="text-end">@Model.Items[i].BookPrice.ToString("N0") đ</td>
+                        <td>
+                            <input asp-for="Items[@i].NormalQuantity" class="form-control text-center js-normal" min="0" />
+                            <span asp-validation-for="Items[@i].NormalQuantity" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <input asp-for="Items[@i].DamagedQuantity" class="form-control text-center js-damaged" min="0" />
+                            <span asp-validation-for="Items[@i].DamagedQuantity" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <input asp-for="Items[@i].LostQuantity" class="form-control text-center js-lost" min="0" />
+                            <span asp-validation-for="Items[@i].LostQuantity" class="text-danger"></span>
+                        </td>
+                        <td class="text-end js-line-compensation">0 đ</td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th colspan="6" class="text-end">@(isEnglish ? "Late fine" : "Phạt quá hạn") (<span id="lateDays">0</span> @(isEnglish ? "day(s)" : "ngày") x @finePerDay.ToString("N0") đ)</th>
+                    <th class="text-end" id="lateFine">0 đ</th>
+                </tr>
+                <tr>
+                    <th colspan="6" class="text-end">@(isEnglish ? "Damaged compensation" : "Bồi thường rách/hỏng")</th>
+                    <th class="text-end" id="damageFine">0 đ</th>
+                </tr>
+                <tr>
+                    <th colspan="6" class="text-end">@(isEnglish ? "Lost compensation" : "Bồi thường mất")</th>
+                    <th class="text-end" id="lostFine">0 đ</th>
+                </tr>
+                <tr>
+                    <th colspan="6" class="text-end">@(isEnglish ? "Total fine" : "Tổng tiền phạt")</th>
+                    <th class="text-end text-danger" id="totalFine">0 đ</th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="form-text">
+            @(isEnglish
+                ? "Each row: Normal return + Damaged + Lost must equal borrowed quantity."
+                : "Mỗi dòng sách: Trả bình thường + Rách/hỏng + Mất = Số đã mượn.")
+            <br />
+            @(isEnglish
+                ? "Compensation: Damaged = 30% book value, Lost = 100% book value."
+                : "Bồi thường: Rách/hỏng = 30% giá trị sách, Mất = 100% giá trị sách.")
+        </div>
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">@(isEnglish ? "Confirm return" : "Xác nhận trả sách")</button>
+        <a asp-controller="BorrowTickets" asp-action="Index" class="btn btn-outline-secondary">@(isEnglish ? "Cancel" : "Hủy")</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const config = document.getElementById('fineConfig');
+            const table = document.getElementById('returnItemsTable');
+            const returnDateInput = document.getElementById('ReturnDate');
+            if (!config || !table || !returnDateInput) {
+                return;
+            }
+
+            function toDecimal(value) {
+                if (value === null || value === undefined) {
+                    return 0;
+                }
+
+                let text = String(value).trim();
+                if (!text) {
+                    return 0;
+                }
+
+                text = text.replace(/\s/g, '');
+
+                if (text.includes(',') && text.includes('.')) {
+                    if (text.lastIndexOf(',') > text.lastIndexOf('.')) {
+                        text = text.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        text = text.replace(/,/g, '');
+                    }
+                } else if (text.includes(',')) {
+                    text = text.replace(',', '.');
+                }
+
+                const parsed = Number(text);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function toInt(value) {
+                const n = parseInt(value ?? '0', 10);
+                return Number.isFinite(n) && n > 0 ? n : 0;
+            }
+
+            function roundVnd(value) {
+                return Math.round(value);
+            }
+
+            function formatVnd(value) {
+                return `${Math.round(value).toLocaleString('vi-VN')} đ`;
+            }
+
+            const finePerDay = toDecimal(config.dataset.finePerDay) || 5000;
+            const damageRate = toDecimal(config.dataset.damageRate) || 0.3;
+            const lostRate = toDecimal(config.dataset.lostRate) || 1;
+            const dueDate = new Date(`${config.dataset.dueDate}T00:00:00`);
+
+            const lateDaysEl = document.getElementById('lateDays');
+            const lateFineEl = document.getElementById('lateFine');
+            const damageFineEl = document.getElementById('damageFine');
+            const lostFineEl = document.getElementById('lostFine');
+            const totalFineEl = document.getElementById('totalFine');
+
+            function calculate() {
+                const returnDate = new Date(`${returnDateInput.value}T00:00:00`);
+                let lateDays = 0;
+                if (!Number.isNaN(returnDate.getTime()) && returnDate > dueDate) {
+                    lateDays = Math.floor((returnDate - dueDate) / 86400000);
+                }
+
+                let damageFine = 0;
+                let lostFine = 0;
+
+                table.querySelectorAll('.js-return-row').forEach(row => {
+                    const damagedQty = toInt(row.querySelector('.js-damaged')?.value);
+                    const lostQty = toInt(row.querySelector('.js-lost')?.value);
+                    const bookPrice = toDecimal(row.querySelector('.js-book-price')?.value);
+
+                    const lineDamage = roundVnd(damagedQty * bookPrice * damageRate);
+                    const lineLost = roundVnd(lostQty * bookPrice * lostRate);
+                    const lineCompensation = lineDamage + lineLost;
+
+                    damageFine += lineDamage;
+                    lostFine += lineLost;
+
+                    const lineEl = row.querySelector('.js-line-compensation');
+                    if (lineEl) {
+                        lineEl.textContent = formatVnd(lineCompensation);
+                    }
+                });
+
+                const lateFine = roundVnd(lateDays * finePerDay);
+                const totalFine = lateFine + damageFine + lostFine;
+
+                lateDaysEl.textContent = lateDays.toString();
+                lateFineEl.textContent = formatVnd(lateFine);
+                damageFineEl.textContent = formatVnd(damageFine);
+                lostFineEl.textContent = formatVnd(lostFine);
+                totalFineEl.textContent = formatVnd(totalFine);
+            }
+
+            table.addEventListener('input', calculate);
+            returnDateInput.addEventListener('input', calculate);
+            returnDateInput.addEventListener('change', calculate);
+
+            calculate();
+        })();
+    </script>
+}

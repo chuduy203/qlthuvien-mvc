@@ -1,0 +1,33 @@
+﻿@using System.Globalization
+@model IEnumerable<LibraryManagement.Models.BorrowTicket>
+@{
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+}
+
+<h2>@(isEnglish ? "Borrow history" : "Lịch sử mượn") - @ViewBag.Reader.FullName</h2>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>@(isEnglish ? "Code" : "Mã phiếu")</th>
+            <th>@(isEnglish ? "Borrow date" : "Ngày mượn")</th>
+            <th>@(isEnglish ? "Due date" : "Hạn trả")</th>
+            <th>@(isEnglish ? "Status" : "Trạng thái")</th>
+            <th>@(isEnglish ? "Books" : "Sách")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var x in Model)
+        {
+            <tr>
+                <td>@x.BorrowCode</td>
+                <td>@x.BorrowDate.ToString("dd/MM/yyyy")</td>
+                <td>@x.DueDate.ToString("dd/MM/yyyy")</td>
+                <td>@x.Status</td>
+                <td>@string.Join(", ", x.BorrowTicketDetails.Select(d => d.Book?.BookName))</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

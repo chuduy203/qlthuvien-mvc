@@ -1,0 +1,43 @@
+﻿@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Globalization
+
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.UICulture.Name ?? "vi-VN";
+    var returnUrl = string.IsNullOrEmpty(Context.Request.Path)
+        ? "~/"
+        : $"~{Context.Request.Path.Value}{Context.Request.QueryString.Value}";
+    var cultureItems = new List<SelectListItem>
+    {
+        new() { Value = "vi-VN", Text = "Tiếng Việt" },
+        new() { Value = "en-US", Text = "English" }
+    };
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+}
+
+<form id="languageSwitcher"
+      asp-controller="Home"
+      asp-action="SetLanguage"
+      asp-route-returnUrl="@returnUrl"
+      method="post"
+      class="d-flex align-items-center gap-2 language-form">
+    @Html.AntiForgeryToken()
+    <label for="cultureSelect" class="small text-light mb-0">@(isEnglish ? "Language" : "Ngôn ngữ")</label>
+    <select id="cultureSelect"
+            name="culture"
+            class="form-select form-select-sm language-select"
+            onchange="this.form.submit()">
+        @foreach (var item in cultureItems)
+        {
+            if (string.Equals(item.Value, currentCulture, StringComparison.OrdinalIgnoreCase))
+            {
+                <option value="@item.Value" selected>@item.Text</option>
+            }
+            else
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        }
+    </select>
+</form>

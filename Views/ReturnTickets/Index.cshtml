@@ -1,0 +1,56 @@
+﻿@using System.Collections.Generic
+@using System.Globalization
+@model IEnumerable<LibraryManagement.Models.ReturnTicket>
+@{
+    var fineTotals = ViewBag.FineTotals as IDictionary<int, decimal> ?? new Dictionary<int, decimal>();
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+}
+
+<h2>@(isEnglish ? "Return tickets" : "Phiếu trả")</h2>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>@(isEnglish ? "Return code" : "Mã trả")</th>
+            <th>@(isEnglish ? "Borrow ticket" : "Phiếu mượn")</th>
+            <th>@(isEnglish ? "Reader" : "Độc giả")</th>
+            <th>@(isEnglish ? "Return date" : "Ngày trả")</th>
+            <th>@(isEnglish ? "Condition details" : "Chi tiết tình trạng")</th>
+            <th>@(isEnglish ? "Total fine" : "Tổng tiền phạt")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var ticket in Model)
+        {
+            <tr>
+                <td>@ticket.ReturnCode</td>
+                <td>@ticket.BorrowTicket?.BorrowCode</td>
+                <td>@ticket.BorrowTicket?.Reader?.FullName</td>
+                <td>@ticket.ReturnDate.ToString("dd/MM/yyyy")</td>
+                <td>
+                    @if (ticket.ReturnTicketDetails.Any())
+                    {
+                        @foreach (var detail in ticket.ReturnTicketDetails)
+                        {
+                            <div>
+                                @detail.Book?.BookName:
+                                @(isEnglish ? "Normal" : "BT") @detail.NormalQuantity,
+                                @(isEnglish ? "Damaged" : "Rách/Hỏng") @detail.DamagedQuantity,
+                                @(isEnglish ? "Lost" : "Mất") @detail.LostQuantity
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+                <td>
+                    @(fineTotals.TryGetValue(ticket.BorrowTicketId, out var fine) ? $"{fine:N0} đ" : "0 đ")
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
