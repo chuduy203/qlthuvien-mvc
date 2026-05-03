@@ -51,12 +51,14 @@ public class BooksController : Controller
         return View(books);
     }
 
+    [RoleAuthorize("Admin")]
     public async Task<IActionResult> Create()
     {
         await LoadDropdowns();
         return View(new Book());
     }
 
+    [RoleAuthorize("Admin")]
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Book book, IFormFile? imageFile)
     {
@@ -86,6 +88,7 @@ public class BooksController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RoleAuthorize("Admin")]
     public async Task<IActionResult> Edit(int id)
     {
         var book = await _context.Books.FindAsync(id);
@@ -98,6 +101,7 @@ public class BooksController : Controller
         return View(book);
     }
 
+    [RoleAuthorize("Admin")]
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Book book, IFormFile? imageFile)
     {
@@ -144,12 +148,14 @@ public class BooksController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [RoleAuthorize("Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var book = await _context.Books.Include(x => x.Category).Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
         return book == null ? NotFound() : View(book);
     }
 
+    [RoleAuthorize("Admin")]
     [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {

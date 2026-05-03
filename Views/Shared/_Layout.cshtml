@@ -1,6 +1,9 @@
 ﻿@using System.Globalization
 @{
     var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    var isAdmin = User.IsInRole("Admin");
+    var isLibrarian = User.IsInRole("Librarian");
 }
 <!DOCTYPE html>
 <html lang="@(isEnglish ? "en" : "vi")">
@@ -27,24 +30,27 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">@(isEnglish ? "Home" : "Trang chủ")</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="Books" asp-action="Index">@(isEnglish ? "Books" : "Sách")</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="Readers" asp-action="Index">@(isEnglish ? "Readers" : "Độc giả")</a></li>
-                @if (User.Identity?.IsAuthenticated ?? false)
+                @if (isAdmin || isLibrarian)
                 {
-                    if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-                    {
-                        <li class="nav-item"><a class="nav-link" asp-controller="Employees" asp-action="Index">@(isEnglish ? "Employees" : "Nhân viên")</a></li>
-                    }
+                    <li class="nav-item"><a class="nav-link" asp-controller="Books" asp-action="Index">@(isEnglish ? "Books" : "Sách")</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="BorrowTickets" asp-action="Index">@(isEnglish ? "Borrow Tickets" : "Phiếu mượn")</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="ReturnTickets" asp-action="Index">@(isEnglish ? "Return Tickets" : "Phiếu trả")</a></li>
                 }
-                <li class="nav-item"><a class="nav-link" asp-controller="BorrowTickets" asp-action="Index">@(isEnglish ? "Borrow Tickets" : "Phiếu mượn")</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="ReturnTickets" asp-action="Index">@(isEnglish ? "Return Tickets" : "Phiếu trả")</a></li>
+                @if (isAdmin)
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Readers" asp-action="Index">@(isEnglish ? "Readers" : "Độc giả")</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Categories" asp-action="Index">@(isEnglish ? "Categories" : "Thể loại")</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Authors" asp-action="Index">@(isEnglish ? "Authors" : "Tác giả")</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Publishers" asp-action="Index">@(isEnglish ? "Publishers" : "Nhà xuất bản")</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Employees" asp-action="Index">@(isEnglish ? "Employees" : "Nhân viên")</a></li>
+                }
             </ul>
             <div class="d-flex align-items-center gap-3 ms-lg-3">
                 @await Html.PartialAsync("_SelectLanguagePartial")
                 <ul class="navbar-nav">
-                    @if (User.Identity?.IsAuthenticated ?? false)
+                    @if (isAuthenticated)
                     {
-                        <li class="nav-item"><span class="nav-link">@(isEnglish ? "Hello" : "Xin chào") @User.Identity.Name</span></li>
+                        <li class="nav-item"><span class="nav-link">@(isEnglish ? "Hello" : "Xin chào") @(User.Identity?.Name ?? string.Empty)</span></li>
                         <li class="nav-item">
                             <form asp-controller="Account" asp-action="Logout" method="post">
                                 <button class="btn btn-link nav-link">@(isEnglish ? "Logout" : "Đăng xuất")</button>

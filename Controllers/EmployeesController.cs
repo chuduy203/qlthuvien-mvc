@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Controllers;
 
-[RoleAuthorize("Admin", "Librarian")]
+[RoleAuthorize("Admin")]
 public class EmployeesController : Controller
 {
     private readonly LibraryDbContext _context;

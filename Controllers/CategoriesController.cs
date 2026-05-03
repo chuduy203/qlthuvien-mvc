@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Controllers;
-[RoleAuthorize("Admin", "Librarian")]
+[RoleAuthorize("Admin")]
 public class CategoriesController : Controller
 {
     private readonly LibraryDbContext _context;

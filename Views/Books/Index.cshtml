@@ -2,11 +2,15 @@
 @model IEnumerable<LibraryManagement.Models.Book>
 @{
     var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+    var isAdmin = User.IsInRole("Admin");
     ViewData["Title"] = isEnglish ? "Book management" : "Quản lý sách";
 }
 
 <h2>@ViewData["Title"]</h2>
-<a asp-action="Create" class="btn btn-primary mb-3">@(isEnglish ? "Add book" : "Thêm sách")</a>
+@if (isAdmin)
+{
+    <a asp-action="Create" class="btn btn-primary mb-3">@(isEnglish ? "Add book" : "Thêm sách")</a>
+}
 
 <form method="get" class="row mb-3">
     <div class="col-md-4">
@@ -35,7 +39,10 @@
             <th>@(isEnglish ? "Available" : "Còn")</th>
             <th>@(isEnglish ? "Rental fee" : "Phí thuê")</th>
             <th>@(isEnglish ? "Book price" : "Giá sách")</th>
-            <th>@(isEnglish ? "Actions" : "Thao tác")</th>
+            @if (isAdmin)
+            {
+                <th>@(isEnglish ? "Actions" : "Thao tác")</th>
+            }
         </tr>
         </thead>
         <tbody>
@@ -51,10 +58,13 @@
                 <td>@item.AvailableQuantity</td>
                 <td>@item.RentalFee.ToString("N0") đ</td>
                 <td>@item.BookPrice.ToString("N0") đ</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">@(isEnglish ? "Edit" : "Sửa")</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">@(isEnglish ? "Delete" : "Xóa")</a>
-                </td>
+                @if (isAdmin)
+                {
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">@(isEnglish ? "Edit" : "Sửa")</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">@(isEnglish ? "Delete" : "Xóa")</a>
+                    </td>
+                }
             </tr>
         }
         </tbody>
