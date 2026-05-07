@@ -14,7 +14,7 @@
 Chỉ cần chạy **1 file duy nhất**:
 
 ```text
-Database/QLThuVien.sql
+Data/QLThuVien.sql
 ```
 
 Script này sẽ:
